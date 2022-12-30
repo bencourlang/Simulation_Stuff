@@ -1,9 +1,9 @@
 import simpy
 import random
 import statistics
-
-import signal
 import time
+import matplotlib.pyplot as plt
+#from matplotlib.animation import FuncAnimation
 
 wait_times = []
 
@@ -53,15 +53,8 @@ def run_theater(env, num_cashiers, num_servers, num_ushers):
         moviegoer += 1
         env.process(theater.go_to_movies(env, moviegoer, theater))
 
-def get_average_wait_time(wait_times):
-    average_wait = statistics.mean(wait_times)
-
-'''def calculate_wait_time(arrival_times, depature_times):
-    average_wait = statistics.mean(wait_times)
-
-    minutes, frac_minuets = divmod(average_wait, 1)
-    seconds = frac_minuets * 60
-    return round(minutes), round(seconds)'''
+def get_wait_time(wait_times):
+    return statistics.mean(wait_times)
 
 def calculate_wait_time(wait_times):
     average_wait = statistics.mean(wait_times)
@@ -70,7 +63,7 @@ def calculate_wait_time(wait_times):
     seconds = frac_minuets * 60
     return round(minutes), round(seconds)
 
-def get_user_input():
+def get_user_input(): # not used
     num_cashiers = input("Input # of cashiers working: ")
     num_servers = input("Input # of servers working: ")
     num_ushers = input("Input # of ushers working: ")
@@ -85,29 +78,14 @@ def get_user_input():
         params = [1, 1, 1]
     return params
 
-
-def main():
-    random.seed(time.time())
-    #num_cashiers, num_servers, num_ushers = get_user_input()
-    num_cashiers = 9
-    num_servers = 6
-    num_ushers = 1
-
+def run_simulation(num_cashiers, num_servers, num_ushers, times_to_run):
     tot_min = []
     tot_sec = []
 
-    '''env = simpy.Environment()
-    env.process(run_theater(env, num_cashiers, num_servers, num_ushers))
-    env.run(until=90)
+    times = []
+    run = []
 
-    mins, secs = calculate_wait_time(wait_times)
-    
-    print(
-      "Running simulation...",
-      f"\nThe average wait time is {mins} minutes and {secs} seconds.",
-    )'''
-
-    for i in range(1000):
+    for i in range(times_to_run):
         env = simpy.Environment()
         env.process(run_theater(env, num_cashiers, num_servers, num_ushers))
         env.run(until=90)
@@ -117,6 +95,13 @@ def main():
         tot_min.append(mins)
         tot_sec.append(secs)
 
+        times.append(get_wait_time(wait_times))
+        run.append(i)
+
+        plt.cla()
+        plt.plot(run, times)
+        plt.pause(0.05)
+
     avg_min = round(statistics.mean(tot_min))
     avg_sec = round(statistics.mean(tot_sec))
 
@@ -124,6 +109,19 @@ def main():
       "Running simulation...",
       f"\nThe average wait time is {avg_min} minutes and {avg_sec} seconds.",
     )
+
+    plt.show()
+
+def main():
+    random.seed(time.time())
+    #num_cashiers, num_servers, num_ushers = get_user_input()
+    num_cashiers = 10000
+    num_servers = 2
+    num_ushers = 1
+
+    amount_to_run = 100
+
+    run_simulation(num_cashiers, num_servers, num_ushers, amount_to_run)
 
 
 if __name__ == '__main__':
